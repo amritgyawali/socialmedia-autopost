@@ -1,0 +1,83 @@
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  shutdown: graceful
+
+spring:
+  application:
+    name: postpilot-engine
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/postpilot}
+    username: ${DB_USER:pp}
+    password: ${DB_PASS:pp}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 1
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  jackson:
+    default-property-inclusion: non_null
+    mapper:
+      accept-case-insensitive-enums: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+postpilot:
+  time-zone: ${TIME_ZONE:Asia/Kathmandu}
+  security:
+    bearer-secret: ${COCKPIT_JWT_SECRET}
+    allow-raw-bearer: ${ALLOW_RAW_BEARER:false}
+    issuer: ${COCKPIT_JWT_ISSUER:postpilot-web}
+    audience: ${COCKPIT_JWT_AUDIENCE:postpilot-engine}
+    max-jwt-lifetime: ${COCKPIT_JWT_MAX_LIFETIME:15m}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  vault:
+    key: ${VAULT_KEY}
+  r2:
+    account-id: ${R2_ACCOUNT_ID:}
+    access-key-id: ${R2_ACCESS_KEY_ID:}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+    bucket: ${R2_BUCKET:postpilot-media}
+    public-base-url: ${R2_PUBLIC_BASE_URL:}
+    presign-ttl: ${R2_PRESIGN_TTL:15m}
+    max-upload-bytes: ${R2_MAX_UPLOAD_BYTES:26214400}
+  oauth:
+    redirect-base: ${OAUTH_REDIRECT_BASE:http://localhost:8080}
+    cockpit-url: ${COCKPIT_URL:http://localhost:3000}
+    meta:
+      client-id: ${META_CLIENT_ID:}
+      client-secret: ${META_CLIENT_SECRET:}
+      api-version: ${META_API_VERSION:v25.0}
+    linkedin:
+      client-id: ${LINKEDIN_CLIENT_ID:}
+      client-secret: ${LINKEDIN_CLIENT_SECRET:}
+      api-version: ${LINKEDIN_API_VERSION:202601}
+    x:
+      client-id: ${X_CLIENT_ID:}
+      client-secret: ${X_CLIENT_SECRET:}
+      api-version: ${X_API_VERSION:2}
+  telegram:
+    bot-token: ${TG_BOT_TOKEN:}
+    chat-id: ${TG_CHAT_ID:}
+  publishing:
+    max-attempts: ${PUBLISH_MAX_ATTEMPTS:3}
+    http-timeout: ${PUBLISH_HTTP_TIMEOUT:60s}
+    instagram-poll-interval: ${INSTAGRAM_POLL_INTERVAL:5s}
+    instagram-poll-timeout: ${INSTAGRAM_POLL_TIMEOUT:5m}
+    max-in-memory-media-bytes: ${PUBLISH_MAX_IN_MEMORY_MEDIA_BYTES:26214400}

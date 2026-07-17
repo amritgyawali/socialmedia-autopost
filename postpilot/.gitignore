@@ -1,0 +1,55 @@
+# Dependencies and build output
+node_modules/
+.next/
+out/
+dist/
+coverage/
+target/
+*.tsbuildinfo
+*.log
+
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+infra/.deploy.env
+infra/.env
+infra/.deploy.lock
+infra/.deploy.next.*
+infra/.deploy.previous.*
+infra/sites/*.caddy
+
+# Local data and backups
+.backups/
+infra/backups/
+*.dump
+*.sql.gz
+*.restic-password
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Vercel and local tooling
+.vercel/
+.turbo/
+.npm/
+
+# Local certificates and keys
+*.pem
+*.key
+*.p12
+*.pfx
+id_ed25519*
+
+!infra/sites/.gitkeep
+!infra/sites/*.example

@@ -1,0 +1,162 @@
+name: postpilot
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:?Set DB_NAME in infra/.env}
+      POSTGRES_USER: ${DB_USER:?Set DB_USER in infra/.env}
+      POSTGRES_PASSWORD: ${DB_PASS:?Set DB_PASS in infra/.env}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - backend
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  engine:
+    image: ${ENGINE_IMAGE:?Set ENGINE_IMAGE in infra/.deploy.env}
+    restart: unless-stopped
+    init: true
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      PORT: "8080"
+      TIME_ZONE: ${TIME_ZONE:-Asia/Kathmandu}
+      COCKPIT_JWT_SECRET: ${COCKPIT_JWT_SECRET}
+      COCKPIT_JWT_ISSUER: ${COCKPIT_JWT_ISSUER:-postpilot-web}
+      COCKPIT_JWT_AUDIENCE: ${COCKPIT_JWT_AUDIENCE:-postpilot-engine}
+      COCKPIT_JWT_MAX_LIFETIME: ${COCKPIT_JWT_MAX_LIFETIME:-15m}
+      ALLOW_RAW_BEARER: ${ALLOW_RAW_BEARER:-false}
+      VAULT_KEY: ${VAULT_KEY}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+      R2_BUCKET: ${R2_BUCKET:-postpilot-media}
+      R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL:-}
+      R2_PRESIGN_TTL: ${R2_PRESIGN_TTL:-15m}
+      R2_MAX_UPLOAD_BYTES: ${R2_MAX_UPLOAD_BYTES:-26214400}
+      OAUTH_REDIRECT_BASE: ${OAUTH_REDIRECT_BASE}
+      COCKPIT_URL: ${COCKPIT_URL}
+      META_CLIENT_ID: ${META_CLIENT_ID:-}
+      META_CLIENT_SECRET: ${META_CLIENT_SECRET:-}
+      META_API_VERSION: ${META_API_VERSION:-v25.0}
+      LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID:-}
+      LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET:-}
+      LINKEDIN_API_VERSION: ${LINKEDIN_API_VERSION:-202601}
+      X_CLIENT_ID: ${X_CLIENT_ID:-}
+      X_CLIENT_SECRET: ${X_CLIENT_SECRET:-}
+      X_API_VERSION: ${X_API_VERSION:-2}
+      TG_BOT_TOKEN: ${TG_BOT_TOKEN:-}
+      TG_CHAT_ID: ${TG_CHAT_ID:-}
+      PUBLISH_MAX_ATTEMPTS: ${PUBLISH_MAX_ATTEMPTS:-3}
+      PUBLISH_HTTP_TIMEOUT: ${PUBLISH_HTTP_TIMEOUT:-60s}
+      PUBLISH_MAX_IN_MEMORY_MEDIA_BYTES: ${PUBLISH_MAX_IN_MEMORY_MEDIA_BYTES:-26214400}
+      INSTAGRAM_POLL_INTERVAL: ${INSTAGRAM_POLL_INTERVAL:-5s}
+      INSTAGRAM_POLL_TIMEOUT: ${INSTAGRAM_POLL_TIMEOUT:-5m}
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    stop_grace_period: 30s
+    networks:
+      - backend
+      - edge
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  # Optional alternative to Vercel. Activate only after following the
+  # self-hosted cockpit section in ACCOUNT_SETUP_AND_DEPLOY.md.
+  web:
+    profiles:
+      - self-host-web
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../apps/web/.env.local
+    environment:
+      AUTH_COOKIE_SECURE: "true"
+    expose:
+      - "3000"
+    networks:
+      - edge
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?Set API_DOMAIN in infra/.env}
+      APP_DOMAIN: ${APP_DOMAIN:-}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in infra/.env}
+    depends_on:
+      engine:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites:/etc/caddy/sites:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+networks:
+  backend:
+    internal: true
+  edge:
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

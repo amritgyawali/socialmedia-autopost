@@ -1,0 +1,46 @@
+{
+	email {$ACME_EMAIL}
+	admin off
+}
+
+{$API_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), geolocation=(), microphone=()"
+	}
+
+	request_body {
+		max_size 32MB
+	}
+
+	# OAuth callbacks carry a one-time authorization code and CSRF state in the
+	# query string. Keep useful access logs without persisting those values.
+	log {
+		format filter {
+			request>uri query {
+				replace code REDACTED
+				replace state REDACTED
+				replace access_token REDACTED
+				replace refresh_token REDACTED
+			}
+		}
+	}
+
+	reverse_proxy engine:8080 {
+		health_uri /actuator/health
+		health_interval 30s
+		health_timeout 5s
+		fail_duration 30s
+		max_fails 3
+	}
+}
+
+# Optional site files are local, untracked configuration. The primary Vercel
+# deployment leaves infra/sites empty.
+import /etc/caddy/sites/*.caddy

@@ -1,0 +1,10 @@
+# Local-only override. It publishes the engine exclusively on loopback and
+# builds it from source. Never use this file on the VPS.
+services:
+  engine:
+    image: postpilot-engine:local
+    build:
+      context: ../apps/engine
+    ports:
+      - "127.0.0.1:8080:8080"
+

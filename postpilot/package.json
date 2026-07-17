@@ -1,0 +1,20 @@
+{
+  "name": "meritbyte-postpilot",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=postpilot-web",
+    "build": "npm run build --workspace=postpilot-web",
+    "lint": "npm run lint --workspace=postpilot-web",
+    "typecheck": "npm run typecheck --workspace=postpilot-web",
+    "test": "npm run test --workspace=postpilot-web --if-present",
+    "hash-password": "npm run hash --workspace=postpilot-web --"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

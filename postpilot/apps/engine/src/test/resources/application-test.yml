@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:postpilot;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+postpilot:
+  time-zone: UTC
+  security:
+    bearer-secret: test-shared-secret-that-is-at-least-32-bytes
+    allow-raw-bearer: true
+    issuer: postpilot-web
+    audience: postpilot-engine
+    max-jwt-lifetime: 15m
+    allowed-origins: [http://localhost:3000]
+  vault:
+    key: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+  r2:
+    account-id: test
+    access-key-id: test
+    secret-access-key: test
+    bucket: test
+    public-base-url: https://media.example.test
+    presign-ttl: 15m
+    max-upload-bytes: 10485760
+  oauth:
+    redirect-base: http://localhost:8080
+    cockpit-url: http://localhost:3000
+    meta: { client-id: test, client-secret: test, api-version: v25.0 }
+    linkedin: { client-id: test, client-secret: test, api-version: '202601' }
+    x: { client-id: test, client-secret: test, api-version: '2' }
+  telegram: { bot-token: '', chat-id: '' }
+  publishing: { max-attempts: 3, http-timeout: 2s, instagram-poll-interval: 1ms, instagram-poll-timeout: 10ms, max-in-memory-media-bytes: 10485760 }

@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the PostPilot database backup every night
+
+[Timer]
+OnCalendar=*-*-* 02:15:00
+RandomizedDelaySec=15m
+Persistent=true
+Unit=postpilot-backup.service
+
+[Install]
+WantedBy=timers.target
+
