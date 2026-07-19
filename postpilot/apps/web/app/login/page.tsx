@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { getSession } from "@/lib/auth";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const session = await getSession();
+  if (session) redirect("/today");
+
   const query = await searchParams;
   const nextPath = query.next?.startsWith("/") && !query.next.startsWith("//") ? query.next : "/today";
   return (

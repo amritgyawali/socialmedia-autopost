@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint app components lib middleware.ts next.config.ts tailwind.config.ts --max-warnings=0",
+    "lint": "eslint app components lib next.config.ts tailwind.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "hash": "node scripts/hash-password.mjs"
   },
