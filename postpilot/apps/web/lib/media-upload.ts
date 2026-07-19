@@ -1,4 +1,4 @@
-import type { MediaAsset } from "@postpilot/shared";
+import type { MediaAsset } from "@/lib/shared-types";
 import { apiRequest } from "@/lib/api-client";
 import { unwrap, type ApiEnvelope, type PresignUpload } from "@/lib/contracts";
 

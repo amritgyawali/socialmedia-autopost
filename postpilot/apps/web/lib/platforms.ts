@@ -1,4 +1,4 @@
-import type { Platform } from "@postpilot/shared";
+import type { Platform } from "@/lib/shared-types";
 
 export const PLATFORM_ORDER: Platform[] = [
   "facebook",

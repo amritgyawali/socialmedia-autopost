@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type DragEvent, type ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { CreatePostRequest } from "@postpilot/shared";
+import type { CreatePostRequest } from "@/lib/shared-types";
 import { Icon } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { useToast } from "@/components/toast";

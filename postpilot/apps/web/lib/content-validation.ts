@@ -1,4 +1,4 @@
-import type { Platform } from "@postpilot/shared";
+import type { Platform } from "@/lib/shared-types";
 import { PLATFORM_META } from "@/lib/platforms";
 
 export function hashtagCount(hashtags: string | null | undefined): number {

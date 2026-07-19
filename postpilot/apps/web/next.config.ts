@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   ...(isVercel ? {} : { output: "standalone" as const, outputFileTracingRoot: path.join(process.cwd(), "../..") }),
   poweredByHeader: false,
-  transpilePackages: ["@postpilot/shared"],
   async headers() {
     return [{
       source: "/:path*",

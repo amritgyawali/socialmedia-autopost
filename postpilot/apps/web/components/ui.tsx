@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import clsx from "clsx";
-import type { Platform, PostStatus, PublishResult } from "@postpilot/shared";
+import type { Platform, PostStatus, PublishResult } from "@/lib/shared-types";
 import { Icon, type IconName } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { platformLabel } from "@/lib/platforms";

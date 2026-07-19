@@ -6,7 +6,7 @@ import type {
   Post,
   PostVariant,
   PublishResult,
-} from "@postpilot/shared";
+} from "./shared-types";
 
 export type { CalendarItem, Channel, MediaAsset, Platform, Post, PostVariant, PublishResult };
 

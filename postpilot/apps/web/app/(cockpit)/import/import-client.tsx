@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import type { CreatePostRequest } from "@postpilot/shared";
+import type { CreatePostRequest } from "@/lib/shared-types";
 import { Icon } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { useToast } from "@/components/toast";

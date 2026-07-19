@@ -1,4 +1,4 @@
-import type { Platform } from "@postpilot/shared";
+import type { Platform } from "@/lib/shared-types";
 import { isPlatform } from "@/lib/platforms";
 
 export const CSV_HEADERS = ["date", "platform", "post_type", "title", "caption", "hashtags", "media_link", "status"] as const;
