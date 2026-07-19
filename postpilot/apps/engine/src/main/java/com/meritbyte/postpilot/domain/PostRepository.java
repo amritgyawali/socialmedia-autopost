@@ -8,12 +8,20 @@ import java.time.LocalDate;
 import java.util.*;
 
 public interface PostRepository extends JpaRepository<PostEntity, UUID> {
+    // PostgreSQL cannot infer a type for a bare "? is null" comparison, so the nullable
+    // bounds are cast explicitly. The status filter uses "in :statuses" (callers pass every
+    // status when unfiltered) to keep an untyped enum parameter out of the SQL entirely.
     @EntityGraph(attributePaths = {"variants", "variants.media", "variants.account"})
-    @Query("select distinct p from PostEntity p where (:from is null or p.scheduledAt >= :from) and (:to is null or p.scheduledAt < :to) and (:status is null or p.status = :status) order by p.scheduledAt asc, p.createdAt desc")
-    List<PostEntity> search(@Param("from") Instant from, @Param("to") Instant to, @Param("status") PostStatus status);
+    @Query("select p from PostEntity p where (cast(:from as Instant) is null or p.scheduledAt >= :from) " +
+            "and (cast(:to as Instant) is null or p.scheduledAt < :to) " +
+            "and p.status in :statuses order by p.scheduledAt asc, p.createdAt desc")
+    List<PostEntity> search(@Param("from") Instant from, @Param("to") Instant to,
+                            @Param("statuses") Collection<PostStatus> statuses);
 
+    // No "distinct": Hibernate 6 already de-duplicates fetch-joined roots, and passing
+    // DISTINCT to PostgreSQL breaks the coalesce() ordering (which is not in the select list).
     @EntityGraph(attributePaths = {"variants", "variants.media", "variants.account"})
-    @Query("select distinct p from PostEntity p where p.contentDate = :date " +
+    @Query("select p from PostEntity p where p.contentDate = :date " +
             "order by coalesce(p.scheduledAt, p.createdAt) asc")
     List<PostEntity> findToday(@Param("date") LocalDate date);
 

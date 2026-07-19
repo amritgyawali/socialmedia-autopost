@@ -32,7 +32,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostDto> list(Instant from, Instant to, PostStatus status) {
         validateRange(from, to);
-        return posts.search(from, to, status).stream().map(ApiMapper::post).toList();
+        return posts.search(from, to, statusFilter(status)).stream().map(ApiMapper::post).toList();
     }
 
     @Transactional(readOnly = true)
@@ -80,9 +80,14 @@ public class PostService {
         Objects.requireNonNull(from, "from is required");
         Objects.requireNonNull(to, "to is required");
         validateRange(from, to);
-        return posts.search(from, to, null).stream().filter(p -> p.scheduledAt != null)
+        return posts.search(from, to, statusFilter(null)).stream().filter(p -> p.scheduledAt != null)
                 .map(p -> new CalendarItemDto(p.id, p.topic, p.scheduledAt, p.status,
                         p.variants.stream().map(v -> v.platform).distinct().toList())).toList();
+    }
+
+    /** A null status means "no filter", expressed as every status so the query stays a plain "in". */
+    private static Collection<PostStatus> statusFilter(PostStatus status) {
+        return status == null ? EnumSet.allOf(PostStatus.class) : EnumSet.of(status);
     }
 
     private void apply(PostEntity post, PostRequest request) {
