@@ -64,6 +64,10 @@ export function friendlyError(error: unknown): string {
     if (error.status === 401 || error.status === 403) return "The engine rejected this request. Check its shared authentication secret.";
     if (error.status === 404) return "That item no longer exists. Refresh and try again.";
     if (error.status === 409) return error.message || "This item changed elsewhere. Refresh and try again.";
+    // 503 is only ever raised by the engine for a specific missing configuration
+    // (OAuth app credentials, R2 media settings) — that message is the whole point,
+    // so it must reach the user instead of being swallowed by the generic 5xx case.
+    if (error.status === 503) return error.message || "This feature is not configured on the engine yet.";
     if (error.status >= 500) return "The publishing engine is unavailable right now. Your draft is still safe.";
     return error.message;
   }
