@@ -17,9 +17,6 @@ const nextConfig: NextConfig = {
   ...(isVercel ? {} : { output: "standalone" as const, outputFileTracingRoot: path.join(process.cwd(), "../..") }),
   poweredByHeader: false,
   transpilePackages: ["@postpilot/shared"],
-  experimental: {
-    optimizePackageImports: ["@postpilot/shared"],
-  },
   async headers() {
     return [{
       source: "/:path*",
