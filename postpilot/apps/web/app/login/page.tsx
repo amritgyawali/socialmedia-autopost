@@ -8,10 +8,10 @@ export const metadata: Metadata = { title: "Sign in" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const session = await getSession();
-  if (session) redirect("/today");
+  if (session) redirect("/calendar");
 
   const query = await searchParams;
-  const nextPath = query.next?.startsWith("/") && !query.next.startsWith("//") ? query.next : "/today";
+  const nextPath = query.next?.startsWith("/") && !query.next.startsWith("//") ? query.next : "/calendar";
   return (
     <main className="login-page">
       <div className="login-glow login-glow-one" /><div className="login-glow login-glow-two" />

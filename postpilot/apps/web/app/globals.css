@@ -301,6 +301,18 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .variant-editor-body { display: flex; flex-direction: column; gap: 11px; padding: 15px; }
 .char-count { color: var(--muted); font-size: 9.5px; }
 .char-count.over { color: var(--red); }
+.variant-preview { display: flex; flex-direction: column; gap: 9px; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: rgba(4, 8, 15, .35); }
+.variant-preview-head { display: flex; align-items: center; gap: 9px; }
+.variant-preview-avatar { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--platform-color) 20%, transparent); color: var(--platform-color); font-size: 12px; font-weight: 800; }
+.variant-preview-who { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.variant-preview-who strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.variant-preview-who small { color: var(--muted); font-size: 8.5px; }
+.variant-preview-title { font-size: 11.5px; font-weight: 700; }
+.variant-preview-caption { overflow-wrap: anywhere; color: var(--muted-bright); font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
+.variant-preview-caption:empty::before { content: "Nothing written yet — this is how the caption will look."; color: var(--muted); font-style: italic; }
+.variant-preview-hashtags { color: var(--cyan); font-size: 10.5px; }
+.variant-preview-media { overflow: hidden; border-radius: 9px; }
+.variant-preview-media img, .variant-preview-media video { display: block; width: 100%; max-height: 220px; object-fit: cover; }
 .upload-zone { position: relative; display: flex; min-height: 112px; align-items: center; justify-content: center; flex-direction: column; gap: 7px; padding: 16px; border: 1px dashed var(--line-strong); border-radius: 12px; background: rgba(4, 8, 15, .28); color: var(--muted); text-align: center; cursor: pointer; transition: 150ms ease; }
 .upload-zone:hover, .upload-zone.dragging { border-color: rgba(0, 212, 255, .45); background: var(--cyan-soft); color: var(--muted-bright); }
 .upload-zone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
@@ -326,8 +338,11 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .calendar-day:nth-child(7n) { border-right: 0; }
 .calendar-day.outside { opacity: .28; }
 .calendar-day.today { background: rgba(0, 212, 255, .035); box-shadow: inset 0 0 0 1px rgba(0, 212, 255, .14); }
-.calendar-date { display: grid; width: 24px; height: 24px; margin-bottom: 6px; place-items: center; border-radius: 7px; color: var(--muted-bright); font-size: 10px; }
+.calendar-date-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.calendar-date { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 7px; color: var(--muted-bright); font-size: 10px; }
 .calendar-day.today .calendar-date { background: var(--cyan); color: #05151a; font-weight: 850; }
+.calendar-day-platforms { display: flex; flex-wrap: wrap; gap: 3px; max-width: 60px; }
+.platform-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--platform-color); box-shadow: 0 0 0 1px rgba(9, 14, 25, .5); }
 .calendar-items { display: flex; flex-direction: column; gap: 4px; }
 .calendar-item { display: block; overflow: hidden; padding: 5px 6px; border-left: 2px solid var(--cyan); border-radius: 4px; background: rgba(0, 212, 255, .07); color: #bceef8; font-size: 8.5px; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
 .calendar-item.done { border-color: var(--green); background: var(--green-soft); color: #9de6c7; }
@@ -433,6 +448,7 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   .agenda-item { padding: 8px; border-left: 2px solid var(--cyan); border-radius: 5px; background: var(--cyan-soft); }
   .agenda-item strong { display: block; font-size: 10px; }
   .agenda-item small { color: var(--muted); font-size: 8.5px; }
+  .agenda-item-platforms { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
   .connection-summary { grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
   .stat-card { padding: 11px; }
   .stat-card span { font-size: 7.5px; }

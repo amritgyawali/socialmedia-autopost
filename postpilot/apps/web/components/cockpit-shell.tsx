@@ -8,16 +8,16 @@ import { Icon, type IconName } from "@/components/icons";
 import { DemoNotice } from "@/components/ui";
 
 const nav: Array<{ href: string; label: string; icon: IconName }> = [
-  { href: "/today", label: "Today", icon: "today" },
-  { href: "/composer", label: "Composer", icon: "compose" },
   { href: "/calendar", label: "Calendar", icon: "calendar" },
+  { href: "/composer", label: "Composer", icon: "compose" },
+  { href: "/today", label: "Today", icon: "today" },
   { href: "/import", label: "Import CSV", icon: "import" },
   { href: "/connections", label: "Connections", icon: "connections" },
   { href: "/logs", label: "Publish logs", icon: "logs" },
 ];
 
 function Brand() {
-  return <Link href="/today" className="brand" aria-label="PostPilot home"><span className="brand-mark"><Icon name="rocket" size={22} /></span><span><strong>PostPilot</strong><small>by MeritByte</small></span></Link>;
+  return <Link href="/calendar" className="brand" aria-label="PostPilot home"><span className="brand-mark"><Icon name="rocket" size={22} /></span><span><strong>PostPilot</strong><small>by MeritByte</small></span></Link>;
 }
 
 export function CockpitShell({ email, demoMode, children }: { email: string; demoMode: boolean; children: ReactNode }) {
