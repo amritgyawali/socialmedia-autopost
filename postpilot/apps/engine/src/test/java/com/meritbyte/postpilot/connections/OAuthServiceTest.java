@@ -49,6 +49,7 @@ class OAuthServiceTest {
     @Test
     void reconnectWithoutRefreshTokenClearsThePreviouslyStoredCredential() {
         PostPilotProperties properties = mock(PostPilotProperties.class);
+        ProviderSettingsService providerSettings = mock(ProviderSettingsService.class);
         OAuthStateRepository states = mock(OAuthStateRepository.class);
         SocialAccountRepository accounts = mock(SocialAccountRepository.class);
         TokenVault vault = mock(TokenVault.class);
@@ -56,7 +57,7 @@ class OAuthServiceTest {
         existing.refreshTokenEnc = new byte[]{9};
         when(accounts.findByPlatformAndExternalId(Platform.LINKEDIN, "member-1")).thenReturn(Optional.of(existing));
         when(vault.encrypt("new-access")).thenReturn(new byte[]{1});
-        OAuthService service = new OAuthService(properties, states, accounts, vault,
+        OAuthService service = new OAuthService(properties, providerSettings, states, accounts, vault,
                 RestClient.create(), new ObjectMapper());
 
         service.upsert(Platform.LINKEDIN, "member-1", "Member", "new-access", null,
@@ -73,15 +74,15 @@ class OAuthServiceTest {
                 .andRespond(withServerError().contentType(MediaType.APPLICATION_JSON));
 
         PostPilotProperties properties = mock(PostPilotProperties.class);
-        PostPilotProperties.OAuth oauth = mock(PostPilotProperties.OAuth.class);
-        when(properties.oauth()).thenReturn(oauth);
-        when(oauth.x()).thenReturn(new PostPilotProperties.OAuth.Provider("client-id", "client-secret", null));
+        ProviderSettingsService providerSettings = mock(ProviderSettingsService.class);
+        when(providerSettings.resolve(Platform.X))
+                .thenReturn(new ProviderSettingsService.ResolvedProvider("client-id", "client-secret", null));
         OAuthStateRepository states = mock(OAuthStateRepository.class);
         SocialAccountRepository accounts = mock(SocialAccountRepository.class);
         TokenVault vault = mock(TokenVault.class);
         when(vault.decrypt(any(byte[].class))).thenReturn("refresh-token");
 
-        OAuthService service = new OAuthService(properties, states, accounts, vault,
+        OAuthService service = new OAuthService(properties, providerSettings, states, accounts, vault,
                 builder.build(), new ObjectMapper());
         return new Fixture(service, accounts, server);
     }
