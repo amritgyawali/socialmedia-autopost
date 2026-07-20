@@ -69,4 +69,8 @@ public final class ApiModels {
 
     public record OAuthStartResponse(String url) {}
     public record OAuthCallbackResponse(String status, Platform platform, int accountsConnected, String message) {}
+
+    /** source: "app" (saved from the cockpit), "env" (environment variables), or "none". */
+    public record OAuthAppStatus(String provider, boolean configured, String source, String clientIdHint) {}
+    public record OAuthAppRequest(String clientId, String clientSecret) {}
 }

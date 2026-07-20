@@ -21,6 +21,7 @@ import java.util.*;
 @Service
 public class OAuthService {
     private final PostPilotProperties properties;
+    private final ProviderSettingsService providerSettings;
     private final OAuthStateRepository states;
     private final SocialAccountRepository accounts;
     private final TokenVault vault;
@@ -28,9 +29,11 @@ public class OAuthService {
     private final ObjectMapper mapper;
     private final SecureRandom random = new SecureRandom();
 
-    public OAuthService(PostPilotProperties properties, OAuthStateRepository states,
-                        SocialAccountRepository accounts, TokenVault vault, RestClient http, ObjectMapper mapper) {
-        this.properties = properties; this.states = states; this.accounts = accounts;
+    public OAuthService(PostPilotProperties properties, ProviderSettingsService providerSettings,
+                        OAuthStateRepository states, SocialAccountRepository accounts,
+                        TokenVault vault, RestClient http, ObjectMapper mapper) {
+        this.properties = properties; this.providerSettings = providerSettings;
+        this.states = states; this.accounts = accounts;
         this.vault = vault; this.http = http; this.mapper = mapper;
     }
 
@@ -90,7 +93,7 @@ public class OAuthService {
     }
 
     private int connectMeta(String code, Platform callbackPlatform) {
-        var provider = properties.oauth().meta();
+        var provider = providerSettings.resolve(callbackPlatform);
         var form = form("client_id", provider.clientId(), "client_secret", provider.clientSecret(),
                 "redirect_uri", callbackUrl(callbackPlatform), "code", code);
         JsonNode token = postForm("https://graph.facebook.com/" + provider.apiVersion() + "/oauth/access_token", form);
@@ -129,7 +132,7 @@ public class OAuthService {
     }
 
     private int connectLinkedIn(String code) {
-        var provider = properties.oauth().linkedin();
+        var provider = providerSettings.resolve(Platform.LINKEDIN);
         JsonNode token = postForm("https://www.linkedin.com/oauth/v2/accessToken", form(
                 "grant_type", "authorization_code", "code", code, "client_id", provider.clientId(),
                 "client_secret", provider.clientSecret(), "redirect_uri", callbackUrl(Platform.LINKEDIN)));
@@ -147,7 +150,7 @@ public class OAuthService {
     }
 
     private int connectX(String code, String verifier) {
-        var provider = properties.oauth().x();
+        var provider = providerSettings.resolve(Platform.X);
         var form = form("grant_type", "authorization_code", "code", code,
                 "redirect_uri", callbackUrl(Platform.X), "client_id", provider.clientId(), "code_verifier", verifier);
         JsonNode token = postFormWithOptionalBasic("https://api.x.com/2/oauth2/token", form,
@@ -164,7 +167,7 @@ public class OAuthService {
     }
 
     private boolean refreshX(SocialAccount account) {
-        var provider = properties.oauth().x();
+        var provider = providerSettings.resolve(Platform.X);
         JsonNode token = postFormWithOptionalBasic("https://api.x.com/2/oauth2/token", form(
                 "grant_type", "refresh_token", "refresh_token", vault.decrypt(account.refreshTokenEnc),
                 "client_id", provider.clientId()), provider.clientId(), provider.clientSecret());
@@ -173,7 +176,7 @@ public class OAuthService {
     }
 
     private boolean refreshLinkedIn(SocialAccount account) {
-        var provider = properties.oauth().linkedin();
+        var provider = providerSettings.resolve(Platform.LINKEDIN);
         JsonNode token = postForm("https://www.linkedin.com/oauth/v2/accessToken", form(
                 "grant_type", "refresh_token", "refresh_token", vault.decrypt(account.refreshTokenEnc),
                 "client_id", provider.clientId(), "client_secret", provider.clientSecret()));
@@ -204,18 +207,19 @@ public class OAuthService {
     }
 
     private String authorizationUrl(Platform platform, String state, String verifier) {
+        var provider = providerSettings.resolve(platform);
         return switch (platform) {
-            case FACEBOOK, INSTAGRAM -> UriComponentsBuilder.fromUriString("https://www.facebook.com/" + properties.oauth().meta().apiVersion() + "/dialog/oauth")
-                    .queryParam("client_id", properties.oauth().meta().clientId()).queryParam("redirect_uri", callbackUrl(platform))
+            case FACEBOOK, INSTAGRAM -> UriComponentsBuilder.fromUriString("https://www.facebook.com/" + provider.apiVersion() + "/dialog/oauth")
+                    .queryParam("client_id", provider.clientId()).queryParam("redirect_uri", callbackUrl(platform))
                     .queryParam("state", state).queryParam("response_type", "code")
                     .queryParam("scope", "pages_show_list,pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish")
                     .build().encode().toUriString();
             case LINKEDIN -> UriComponentsBuilder.fromUriString("https://www.linkedin.com/oauth/v2/authorization")
-                    .queryParam("response_type", "code").queryParam("client_id", properties.oauth().linkedin().clientId())
+                    .queryParam("response_type", "code").queryParam("client_id", provider.clientId())
                     .queryParam("redirect_uri", callbackUrl(platform)).queryParam("state", state)
                     .queryParam("scope", "openid profile w_member_social").build().encode().toUriString();
             case X -> UriComponentsBuilder.fromUriString("https://x.com/i/oauth2/authorize")
-                    .queryParam("response_type", "code").queryParam("client_id", properties.oauth().x().clientId())
+                    .queryParam("response_type", "code").queryParam("client_id", provider.clientId())
                     .queryParam("redirect_uri", callbackUrl(platform)).queryParam("scope", "tweet.read tweet.write users.read media.write offline.access")
                     .queryParam("state", state).queryParam("code_challenge", sha256Base64(verifier))
                     .queryParam("code_challenge_method", "S256").build().encode().toUriString();
@@ -256,8 +260,7 @@ public class OAuthService {
             throw new IllegalArgumentException((platform == null ? "Unknown" : platform.wire()) + " OAuth is native-scheduler-only in PostPilot v1");
     }
     private void requireProviderConfigured(Platform platform) {
-        var provider = platform == Platform.LINKEDIN ? properties.oauth().linkedin() :
-                platform == Platform.X ? properties.oauth().x() : properties.oauth().meta();
+        var provider = providerSettings.resolve(platform);
         if (provider.clientId() == null || provider.clientId().isBlank() ||
                 (platform != Platform.X && (provider.clientSecret() == null || provider.clientSecret().isBlank()))) {
             throw new ConfigurationException(platform.wire() + " OAuth credentials are not configured");
