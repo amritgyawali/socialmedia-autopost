@@ -20,6 +20,8 @@ const ALLOWED_PATHS = [
   /^logs$/,
   /^media\/(presign|complete|register-external)$/,
   /^oauth\/(facebook|instagram|x|linkedin|youtube|tiktok)\/start$/,
+  /^oauth-apps$/,
+  /^oauth-apps\/(meta|linkedin|x)$/,
   /^health$/,
 ];
 
