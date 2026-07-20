@@ -7,18 +7,16 @@ import clsx from "clsx";
 import { Icon, type IconName } from "@/components/icons";
 import { DemoNotice } from "@/components/ui";
 
-const nav: Array<{ href: string; label: string; icon: IconName }> = [
-  { href: "/calendar", label: "Calendar", icon: "calendar" },
-  { href: "/composer", label: "Composer", icon: "compose" },
-  { href: "/today", label: "Today", icon: "today" },
-  { href: "/import", label: "Import CSV", icon: "import" },
-  { href: "/connections", label: "Connections", icon: "connections" },
-  { href: "/logs", label: "Publish logs", icon: "logs" },
+// Shell layout adapted from Postiz's new-layout chrome (github.com/gitroomhq/postiz-app,
+// AGPL-3.0): icon rail on the left, main column with a title topbar.
+const nav: Array<{ href: string; label: string; title: string; icon: IconName }> = [
+  { href: "/calendar", label: "Calendar", title: "Calendar", icon: "calendar" },
+  { href: "/composer", label: "Create", title: "Composer", icon: "compose" },
+  { href: "/today", label: "Today", title: "Today", icon: "today" },
+  { href: "/import", label: "Import", title: "Import CSV", icon: "import" },
+  { href: "/connections", label: "Channels", title: "Channels", icon: "connections" },
+  { href: "/logs", label: "Logs", title: "Publish logs", icon: "logs" },
 ];
-
-function Brand() {
-  return <Link href="/calendar" className="brand" aria-label="PostPilot home"><span className="brand-mark"><Icon name="rocket" size={22} /></span><span><strong>PostPilot</strong><small>by MeritByte</small></span></Link>;
-}
 
 export function CockpitShell({ email, demoMode, children }: { email: string; demoMode: boolean; children: ReactNode }) {
   const pathname = usePathname();
@@ -33,23 +31,40 @@ export function CockpitShell({ email, demoMode, children }: { email: string; dem
     router.refresh();
   }
 
+  const title = nav.find((item) => pathname.startsWith(item.href))?.title ?? "PostPilot";
+
   return (
-    <div className="cockpit-shell">
-      <header className="mobile-header"><Brand /><button className="icon-button" onClick={() => setOpen(true)} aria-label="Open navigation"><Icon name="menu" /></button></header>
+    <div className="pz-shell">
       {open ? <button className="nav-scrim" aria-label="Close navigation" onClick={() => setOpen(false)} /> : null}
-      <aside className={clsx("sidebar", open && "sidebar-open")}>
-        <div className="sidebar-top"><Brand /><button className="icon-button sidebar-close" onClick={() => setOpen(false)} aria-label="Close navigation"><Icon name="close" /></button></div>
-        <nav className="primary-nav" aria-label="Cockpit navigation">
-          <p className="nav-label">Workspace</p>
-          {nav.slice(0, 4).map((item) => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={clsx("nav-link", pathname.startsWith(item.href) && "active")}><Icon name={item.icon} /><span>{item.label}</span>{item.href === "/today" ? <span className="nav-live" /> : null}</Link>)}
-          <p className="nav-label nav-label-spaced">System</p>
-          {nav.slice(4).map((item) => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={clsx("nav-link", pathname.startsWith(item.href) && "active")}><Icon name={item.icon} /><span>{item.label}</span></Link>)}
+      <aside className={clsx("pz-rail", open && "pz-rail-open")}>
+        <Link href="/calendar" className="pz-logo" aria-label="PostPilot home" onClick={() => setOpen(false)}><Icon name="rocket" size={22} /></Link>
+        <nav className="pz-rail-nav" aria-label="Cockpit navigation">
+          {nav.map((item) => (
+            <Link key={item.href} href={item.href} title={item.title} onClick={() => setOpen(false)} className={clsx("pz-rail-item", pathname.startsWith(item.href) && "active")}>
+              <Icon name={item.icon} size={20} />
+              <span>{item.label}</span>
+            </Link>
+          ))}
         </nav>
-        <div className="sidebar-footer">
-          <div className="admin-chip"><span className="avatar">{email.slice(0, 1).toUpperCase()}</span><span className="admin-copy"><strong>Administrator</strong><small title={email}>{email}</small></span><button className="icon-button" onClick={signOut} disabled={signingOut} aria-label="Sign out"><Icon name="logout" size={18} /></button></div>
+        <div className="pz-rail-bottom">
+          <button className="pz-rail-item" onClick={signOut} disabled={signingOut} title="Sign out">
+            <Icon name="logout" size={20} />
+            <span>{signingOut ? "…" : "Sign out"}</span>
+          </button>
         </div>
       </aside>
-      <main className="main-content">{demoMode ? <DemoNotice /> : null}{children}</main>
+      <div className="pz-main">
+        <header className="pz-topbar">
+          <button className="icon-button pz-burger" onClick={() => setOpen(true)} aria-label="Open navigation"><Icon name="menu" /></button>
+          <div className="pz-title">{title}</div>
+          <div className="pz-topbar-actions">
+            <span className="pz-user" title={email}><span className="pz-avatar">{email.slice(0, 1).toUpperCase()}</span><span className="pz-user-email">{email}</span></span>
+            <span className="pz-sep" aria-hidden />
+            <button className="icon-button" onClick={signOut} disabled={signingOut} aria-label="Sign out"><Icon name="logout" size={18} /></button>
+          </div>
+        </header>
+        <main className="pz-content">{demoMode ? <DemoNotice /> : null}{children}</main>
+      </div>
     </div>
   );
 }
