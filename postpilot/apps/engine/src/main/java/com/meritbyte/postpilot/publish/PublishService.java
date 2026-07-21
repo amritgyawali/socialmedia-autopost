@@ -297,7 +297,7 @@ public class PublishService {
         RestClientResponseException response = findCause(e, RestClientResponseException.class);
         if (response != null) {
             int status = response.getStatusCode().value();
-            return "Provider returned HTTP " + status + explainStatus(status);
+            return "Provider returned HTTP " + status + explainStatus(status) + providerDetail(response);
         }
         if (findCause(e, ResourceAccessException.class) != null || findCause(e, IOException.class) != null) {
             return "Provider network request failed";
@@ -306,6 +306,17 @@ public class PublishService {
         String message = root.getMessage(); if (message == null || message.isBlank()) message = root.getClass().getSimpleName();
         message = message.replaceAll("(?i)(access_token|client_secret|refresh_token)=[^&\\s]+", "$1=[redacted]");
         return message.length() > 4000 ? message.substring(0, 4000) : message;
+    }
+
+    /** The provider's own error body: the only reliable way to learn why it refused. */
+    private static String providerDetail(RestClientResponseException response) {
+        String body;
+        try { body = response.getResponseBodyAsString(); } catch (Exception ignored) { return ""; }
+        if (body == null || body.isBlank()) return "";
+        body = body.replaceAll("(?i)(access_token|client_secret|refresh_token)[\"'=:\\s]+[^&\"'\\s,}]+", "$1=[redacted]")
+                .replaceAll("\\s+", " ").trim();
+        if (body.length() > 300) body = body.substring(0, 300) + "…";
+        return " | provider said: " + body;
     }
 
     /** Operator-facing hint for the provider statuses that otherwise look like silent no-ops. */
