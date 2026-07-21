@@ -171,8 +171,23 @@ LinkedIn simply will not issue org scopes to an unapproved app.
 | **Portal** | <https://developer.x.com/en/portal/dashboard> |
 | **Callback** | `https://postiz.pachey.duckdns.org/integrations/social/x` |
 | **`social.env`** | `X_API_KEY`, `X_API_SECRET` |
-| **Setup** | Project + App → *User authentication settings* → OAuth 2.0, type **Web App** |
-| **💰 Cost** | Posting requires a **paid access tier**. The free tier will not publish. |
+| **Auth flow** | **OAuth 1.0a** (Postiz uses the `twitter-api-v2` client with `appKey`/`appSecret`) |
+| **Credentials** | *Keys and tokens* → **Consumer Keys → API Key and Secret** |
+| **Permissions** | *User authentication settings* → enable **OAuth 1.0a**, App permissions **Read and write** |
+
+> ⚠️ **Do not use the OAuth 2.0 Client ID / Client Secret here.** Postiz's X provider is
+> OAuth 1.0a and needs the **API Key + API Secret** (a.k.a. Consumer Keys) — a different pair
+> on the same page. PostPilot's X integration uses OAuth 2.0, so the two apps need
+> *different* values from the same X app. Mixing them up is the most common cause of failure.
+>
+> ⚠️ **App permissions must be "Read and write"** before you connect. If it is Read-only,
+> the OAuth handshake still succeeds but every post fails. Changing this setting requires
+> regenerating your keys afterwards.
+>
+> 💰 **Cost:** X is the only network here that charges. On the **Pay Per Use** plan you must
+> hold a **prepaid credit balance** — with a zero balance the API returns `HTTP 402 Payment
+> Required` on publish (the OAuth connect step may still succeed, which is misleading).
+> Check *Billing → Credits*. Metered billing is typically cents per post, not a flat $200/mo.
 
 ### YouTube / Google Business Profile
 | | |
