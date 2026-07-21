@@ -295,7 +295,10 @@ public class PublishService {
 
     private static String safeError(Exception e) {
         RestClientResponseException response = findCause(e, RestClientResponseException.class);
-        if (response != null) return "Provider returned HTTP " + response.getStatusCode().value();
+        if (response != null) {
+            int status = response.getStatusCode().value();
+            return "Provider returned HTTP " + status + explainStatus(status);
+        }
         if (findCause(e, ResourceAccessException.class) != null || findCause(e, IOException.class) != null) {
             return "Provider network request failed";
         }
@@ -303,6 +306,17 @@ public class PublishService {
         String message = root.getMessage(); if (message == null || message.isBlank()) message = root.getClass().getSimpleName();
         message = message.replaceAll("(?i)(access_token|client_secret|refresh_token)=[^&\\s]+", "$1=[redacted]");
         return message.length() > 4000 ? message.substring(0, 4000) : message;
+    }
+
+    /** Operator-facing hint for the provider statuses that otherwise look like silent no-ops. */
+    private static String explainStatus(int status) {
+        return switch (status) {
+            case 401 -> " — the access token was rejected; reconnect the account in Connections";
+            case 402 -> " — this platform's API plan does not permit posting (X requires paid API access at developer.x.com)";
+            case 403 -> " — the app is missing a permission/scope this action requires";
+            case 429 -> " — rate limited by the platform; PostPilot retries automatically";
+            default -> "";
+        };
     }
 
     private record QueueBatch(List<Long> resultIds, List<PublishResultDto> response) {}
